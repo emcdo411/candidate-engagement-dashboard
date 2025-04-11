@@ -49,12 +49,6 @@ All data used in this project are **simulated representations** based on typical
 
 ## 🧪 [Working Code](#working-code)
 
-The full Shiny app code is included in [`app.R`](./app.R). Below is the core logic used to load and visualize the dataset:
-
-<details>
-<summary>Click to Expand R Shiny Code Snippet</summary>
-
-```r
 # Load required libraries
 library(shiny)
 library(ggplot2)
@@ -63,11 +57,204 @@ library(tidyr)
 library(viridis)
 library(DT)
 
-# ...full UI and server code available in app.R
-```
+# Dataset for the U.S.
+us_data <- list(
+  interview_process = data.frame(
+    Region = c("North East", "South West", "Midwest", "West"),
+    Total_Interviews = c(120, 250, 200, 150),
+    Successful_Interviews = c(90, 180, 160, 120),
+    Rejected_Interviews = c(30, 70, 40, 30),
+    Satisfaction_Score = c(4.1, 4.3, 4.2, 3.9)
+  ),
+  follow_up_process = data.frame(
+    Region = c("North East", "South West", "Midwest", "West"),
+    Follow_Up_Emails = c(100, 220, 180, 140),
+    Phone_Responses = c(60, 150, 130, 100),
+    Further_Interview_Requests = c(80, 160, 130, 100),
+    Satisfaction_Score = c(4.2, 4.3, 4.1, 4.0)
+  ),
+  survey = data.frame(
+    Region = c("North East", "South West", "Midwest", "West"),
+    Overall_Satisfaction = c(4.1, 4.5, 4.2, 3.8),
+    Communication_Satisfaction = c(4.0, 4.4, 4.1, 3.7),
+    Interview_Experience = c(4.3, 4.6, 4.4, 3.9),
+    Follow_Up_Satisfaction = c(4.0, 4.3, 4.2, 3.8)
+  ),
+  offer_acceptance = data.frame(
+    Region = c("North East", "South West", "Midwest", "West"),
+    Total_Offers_Made = c(100, 230, 180, 140),
+    Offers_Accepted = c(80, 210, 160, 120),
+    Acceptance_Rate = c(80, 91, 89, 86)
+  ),
+  demographics = data.frame(
+    Region = c("North East", "South West", "Midwest", "West"),
+    Male_Candidates = c(50, 130, 110, 80),
+    Female_Candidates = c(70, 100, 90, 60),
+    Age_Group_18_25 = c(40, 90, 75, 55),
+    Age_Group_26_35 = c(50, 110, 95, 70),
+    Age_Group_36_45 = c(30, 80, 70, 40)
+  ),
+  conversion_funnel = data.frame(
+    Region = c("North East", "South West", "Midwest", "West"),
+    Leads = c(200, 300, 250, 180),
+    Interviews = c(120, 250, 200, 150),
+    Offers_Made = c(100, 230, 180, 140),
+    Offers_Accepted = c(80, 210, 160, 120)
+  )
+)
 
-</details>
+# Dataset for the U.K.
+uk_data <- list(
+  interview_process = data.frame(
+    Region = c("London", "Manchester", "Birmingham", "Edinburgh"),
+    Total_Interviews = c(110, 240, 210, 160),
+    Successful_Interviews = c(85, 190, 175, 130),
+    Rejected_Interviews = c(25, 50, 35, 30),
+    Satisfaction_Score = c(4.2, 4.4, 4.3, 4.0)
+  ),
+  follow_up_process = data.frame(
+    Region = c("London", "Manchester", "Birmingham", "Edinburgh"),
+    Follow_Up_Emails = c(95, 210, 185, 135),
+    Phone_Responses = c(55, 145, 125, 90),
+    Further_Interview_Requests = c(75, 150, 125, 95),
+    Satisfaction_Score = c(4.3, 4.4, 4.2, 4.1)
+  ),
+  survey = data.frame(
+    Region = c("London", "Manchester", "Birmingham", "Edinburgh"),
+    Overall_Satisfaction = c(4.3, 4.6, 4.4, 3.9),
+    Communication_Satisfaction = c(4.1, 4.5, 4.3, 3.8),
+    Interview_Experience = c(4.5, 4.7, 4.6, 4.0),
+    Follow_Up_Satisfaction = c(4.1, 4.4, 4.2, 4.0)
+  ),
+  offer_acceptance = data.frame(
+    Region = c("London", "Manchester", "Birmingham", "Edinburgh"),
+    Total_Offers_Made = c(90, 220, 180, 130),
+    Offers_Accepted = c(75, 200, 160, 120),
+    Acceptance_Rate = c(83, 91, 89, 92)
+  ),
+  demographics = data.frame(
+    Region = c("London", "Manchester", "Birmingham", "Edinburgh"),
+    Male_Candidates = c(55, 125, 115, 85),
+    Female_Candidates = c(65, 110, 95, 60),
+    Age_Group_18_25 = c(45, 85, 70, 60),
+    Age_Group_26_35 = c(55, 105, 90, 65),
+    Age_Group_36_45 = c(30, 75, 65, 40)
+  ),
+  conversion_funnel = data.frame(
+    Region = c("London", "Manchester", "Birmingham", "Edinburgh"),
+    Leads = c(180, 280, 250, 170),
+    Interviews = c(110, 240, 210, 160),
+    Offers_Made = c(90, 220, 180, 130),
+    Offers_Accepted = c(75, 200, 160, 120)
+  )
+)
 
+# Define UI
+ui <- fluidPage(
+  titlePanel("Candidate Engagement and Follow-Up Analysis"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("country", "Choose Country", choices = c("U.S.", "U.K.")),
+      tabsetPanel(
+        id = "tabs",
+        tabPanel("Interview Process", value = "interview_process"),
+        tabPanel("Follow-Up Process", value = "follow_up_process"),
+        tabPanel("Satisfaction Survey", value = "survey"),
+        tabPanel("Offer Acceptance", value = "offer_acceptance"),
+        tabPanel("Demographics", value = "demographics"),
+        tabPanel("Conversion Funnel", value = "conversion_funnel")
+      ),
+      selectInput("plot_type", "Choose Plot Type", choices = c("Bar Plot", "Line Plot")),
+      downloadButton("download_data", "Download Data as CSV")
+    ),
+    mainPanel(
+      plotOutput("plot"),
+      DTOutput("table")
+    )
+  )
+)
+
+# Define server logic
+server <- function(input, output) {
+  
+  # Function to prepare data based on country and tab selection
+  filtered_data <- reactive({
+    country_data <- switch(input$country,
+                           "U.S." = us_data,
+                           "U.K." = uk_data)
+    
+    data <- switch(input$tabs,
+                   "interview_process" = country_data$interview_process,
+                   "follow_up_process" = country_data$follow_up_process,
+                   "survey" = country_data$survey,
+                   "offer_acceptance" = country_data$offer_acceptance,
+                   "demographics" = country_data$demographics,
+                   "conversion_funnel" = country_data$conversion_funnel)
+    
+    # Reshape data for plotting
+    if (input$tabs %in% c("survey", "demographics", "conversion_funnel")) {
+      data <- data %>% 
+        pivot_longer(cols = -Region, names_to = "Metric", values_to = "Value")
+    } else if (input$tabs == "offer_acceptance") {
+      data <- data %>% 
+        select(Region, Acceptance_Rate) %>% 
+        rename(Value = Acceptance_Rate) %>% 
+        mutate(Metric = "Acceptance_Rate")
+    } else {
+      data <- data %>% 
+        select(Region, Satisfaction_Score) %>% 
+        rename(Value = Satisfaction_Score) %>% 
+        mutate(Metric = "Satisfaction_Score")
+    }
+    data
+  })
+  
+  # Raw data for table and download
+  raw_data <- reactive({
+    country_data <- switch(input$country, "U.S." = us_data, "U.K." = uk_data)
+    country_data[[input$tabs]]
+  })
+  
+  # Render plot based on selected dataset and plot type
+  output$plot <- renderPlot({
+    data <- filtered_data()
+    
+    if (input$plot_type == "Bar Plot") {
+      ggplot(data, aes(x = Region, y = Value, fill = Metric)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(title = paste(input$country, input$tabs, "Analysis"), y = "Value") +
+        scale_fill_viridis(discrete = TRUE) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    } else if (input$plot_type == "Line Plot") {
+      ggplot(data, aes(x = Region, y = Value, group = Metric, color = Metric)) +
+        geom_line() +
+        geom_point() +
+        labs(title = paste(input$country, input$tabs, "Analysis (Line Plot)"), y = "Value") +
+        scale_color_viridis(discrete = TRUE) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    }
+  })
+  
+  # Show raw data in table format
+  output$table <- renderDT({
+    datatable(raw_data())
+  })
+  
+  # Download raw data as CSV
+  output$download_data <- downloadHandler(
+    filename = function() {
+      paste(input$country, "_", input$tabs, "_data.csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(raw_data(), file, row.names = FALSE)
+    }
+  )
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
 ---
 
 ## 🖼️ [UI Highlights](#ui-highlights)
