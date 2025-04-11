@@ -331,4 +331,4 @@ shinyApp(ui = ui, server = server)
 ---
 
 ## Author
-Your Name - [Your GitHub](https://github.com/yourusername)
+Maurice McDonald - [Your GitHub](https://github.com/emcdo411)
